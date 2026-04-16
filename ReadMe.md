@@ -1,6 +1,3 @@
-Here is **Phase 8: Documentation** in clean, strict **MDX format** — this is your **portfolio weapon**, so it’s written at a professional, enterprise level.
-
----
 
 ```mdx id="p8doc1"
 # Transaction Processing & Fraud Detection System
