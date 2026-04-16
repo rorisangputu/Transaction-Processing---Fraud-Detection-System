@@ -1,0 +1,217 @@
+# 🧾 Phase 1: Requirements Analysis
+
+This document defines the functional and non-functional requirements for the:
+
+**Transaction Processing & Fraud Detection System with Analytics Dashboard**
+
+---
+
+## 🎯 Overview
+
+This system simulates an enterprise banking backend responsible for:
+
+- Processing financial transactions
+- Detecting fraudulent activity
+- Providing analytics insights
+
+---
+
+## 👥 1. Stakeholders
+
+### Primary Stakeholders
+
+| Stakeholder | Description | Goals |
+|------------|------------|------|
+| Bank Customer (User) | End-user performing transactions | Fast, secure, reliable transactions |
+| Bank Admin | Internal system operator | Monitor accounts, view analytics |
+| Fraud Analyst | Risk/compliance role | Investigate suspicious transactions |
+| System (Automated) | Fraud detection engine | Identify and flag anomalies |
+
+---
+
+## ⚙️ 2. Functional Requirements
+
+### 🔐 User & Account Management
+
+#### FR1: Create User
+- Create user profile
+- Fields: `Name`, `Email`, `CreatedAt`
+
+#### FR2: Create Account
+- A user can have multiple accounts
+- Fields:
+  - `AccountNumber`
+  - `Balance`
+  - `AccountType` (optional)
+
+#### FR3: Retrieve User Accounts
+- Fetch account details by user
+
+---
+
+### 💸 Transaction Processing
+
+#### FR4: Deposit Funds
+- Increase account balance
+- Record transaction
+
+#### FR5: Withdraw Funds
+- Decrease balance
+- Reject if insufficient funds
+
+#### FR6: Transfer Funds
+- Transfer money between accounts
+- Must be **atomic**:
+  - Debit sender
+  - Credit receiver
+
+---
+
+### 📜 Transaction History
+
+#### FR7: Record Transaction
+Each transaction must include:
+- `Amount`
+- `Type` (Deposit, Withdraw, Transfer)
+- `Timestamp`
+- `SourceAccountId`
+- `DestinationAccountId`
+
+#### FR8: Retrieve Transaction History
+Support filtering by:
+- User
+- Date range
+- Transaction type
+
+---
+
+### 🚨 Fraud Detection
+
+#### FR9: Large Transaction Detection
+- Flag transactions above threshold (e.g. R10,000)
+
+#### FR10: High-Frequency Detection
+- Flag multiple transactions within a short time window
+
+#### FR11: Store Fraud Flags
+Each flagged transaction must include:
+- `TransactionId`
+- `Reason`
+- `Timestamp`
+
+---
+
+### 📊 Analytics
+
+#### FR12: User Transaction Summary
+- Total transactions per user
+- Total transaction value
+
+#### FR13: Spending Trends
+- Monthly aggregation of transactions
+
+#### FR14: Fraud Metrics
+- Percentage of flagged transactions
+- Total flagged transactions
+
+#### FR15: Risk Ranking
+- Identify accounts with highest fraud activity
+
+---
+
+## 🧱 3. Non-Functional Requirements
+
+### ⚡ Performance
+- Transaction response time < 500ms (target)
+- Optimized queries using indexes
+
+### 📈 Scalability
+- Layered architecture (Controller → Service → Repository)
+- Designed for horizontal scaling
+
+### 🔒 Data Integrity
+- Use ACID-compliant database transactions
+- Ensure atomic operations for transfers
+
+### 🧼 Maintainability
+- Clear separation of concerns:
+  - Controllers → API layer
+  - Services → Business logic
+  - Repositories → Data access
+
+### 🌐 API Standards
+- RESTful design
+- JSON request/response
+- Proper HTTP status codes
+
+### 📊 Observability (Basic)
+- Log:
+  - Transactions
+  - Fraud events
+
+---
+
+## 🔄 4. Use Cases
+
+### ✅ Use Case 1: Perform Transfer
+
+**Actor:** Bank Customer
+
+**Flow:**
+1. User initiates transfer
+2. System validates balance
+3. System executes transaction (atomic)
+4. Fraud detection is triggered
+5. Transaction is stored
+6. Response returned
+
+---
+
+### 🚨 Use Case 2: Fraud Detection
+
+**Actor:** System
+
+**Flow:**
+1. Transaction occurs
+2. System evaluates:
+   - Amount threshold
+   - Transaction frequency
+3. If suspicious:
+   - Create fraud flag
+4. Store result
+
+---
+
+### 📊 Use Case 3: View Analytics Dashboard
+
+**Actor:** Admin / Fraud Analyst
+
+**Flow:**
+1. Request analytics data
+2. System executes SQL queries
+3. Aggregate data returned
+4. Dashboard displays KPIs and trends
+
+---
+
+## ⚠️ 5. Assumptions
+
+- Single currency: **ZAR**
+- No external payment gateway integration
+- Authentication is simplified (can be extended later)
+- Fraud detection is **rule-based only**
+- System is **monolithic with layered architecture**
+
+---
+
+## 🚧 6. Risks & Considerations
+
+| Risk | Mitigation |
+|------|-----------|
+| Data inconsistency | Use database transactions |
+| Fraud logic too simplistic | Design for extensibility |
+| Performance bottlenecks | Add indexes early |
+| Over-engineering | Keep scope focused |
+
+---
+

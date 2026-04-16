@@ -1,0 +1,235 @@
+# Phase 2: System Design
+
+---
+
+## 2.1 Architecture Design
+
+### Architectural Style
+
+The system follows a **monolithic layered architecture**.
+
+**Rationale:**
+- Simpler deployment and development
+- Clear separation of concerns
+- Easier debugging and testing
+- Suitable for a portfolio project with enterprise alignment
+
+---
+
+### System Layers
+
+1. **Presentation Layer (Controllers)**
+   - Handles HTTP requests and responses
+   - Performs input validation
+   - Calls application services
+
+2. **Application Layer (Services)**
+   - Contains business logic
+   - Manages transactions and fraud checks
+   - Ensures consistency
+
+3. **Data Access Layer (Repositories)**
+   - Handles database interaction
+   - Abstracts persistence logic
+
+4. **Database Layer (PostgreSQL)**
+   - Stores all system data
+
+---
+
+### Component Interaction
+
+
+Client (Postman / Frontend)
+↓
+Controllers (API Layer)
+↓
+Services (Business Logic)
+↓
+Repositories (Data Access)
+↓
+PostgreSQL Database
+
+
+---
+
+### Transaction Flow with Fraud Detection
+
+
+[Client Request]
+↓
+[TransactionController]
+↓
+[TransactionService]
+├── Validate request
+├── Execute DB transaction (atomic)
+├── Trigger FraudService
+↓
+[FraudService]
+├── Evaluate rules
+├── Create FraudFlag (if needed)
+↓
+[Repository Layer]
+↓
+[Database]
+
+
+---
+
+## 2.2 Database Design (PostgreSQL)
+
+### Entity Overview
+
+- Users
+- Accounts
+- Transactions
+- FraudFlags
+
+---
+
+### Table: Users
+
+```sql
+CREATE TABLE Users (
+    Id UUID PRIMARY KEY,
+    Name VARCHAR(100) NOT NULL,
+    Email VARCHAR(150) UNIQUE NOT NULL,
+    CreatedAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+Table: Accounts
+CREATE TABLE Accounts (
+    Id UUID PRIMARY KEY,
+    UserId UUID NOT NULL,
+    AccountNumber VARCHAR(50) UNIQUE NOT NULL,
+    Balance DECIMAL(18,2) NOT NULL DEFAULT 0,
+    CreatedAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    
+    CONSTRAINT fk_user
+        FOREIGN KEY(UserId)
+        REFERENCES Users(Id)
+        ON DELETE CASCADE
+);
+Table: Transactions
+CREATE TABLE Transactions (
+    Id UUID PRIMARY KEY,
+    Type VARCHAR(20) NOT NULL,
+    Amount DECIMAL(18,2) NOT NULL,
+    SourceAccountId UUID,
+    DestinationAccountId UUID,
+    CreatedAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_source_account
+        FOREIGN KEY(SourceAccountId)
+        REFERENCES Accounts(Id),
+
+    CONSTRAINT fk_destination_account
+        FOREIGN KEY(DestinationAccountId)
+        REFERENCES Accounts(Id)
+);
+Table: FraudFlags
+CREATE TABLE FraudFlags (
+    Id UUID PRIMARY KEY,
+    TransactionId UUID NOT NULL,
+    Reason VARCHAR(255) NOT NULL,
+    CreatedAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_transaction
+        FOREIGN KEY(TransactionId)
+        REFERENCES Transactions(Id)
+        ON DELETE CASCADE
+);
+Relationships
+One User → Many Accounts
+One Account → Many Transactions (as source/destination)
+One Transaction → Zero or Many FraudFlags
+Indexing Strategy
+CREATE INDEX idx_accounts_userid ON Accounts(UserId);
+
+CREATE INDEX idx_transactions_source ON Transactions(SourceAccountId);
+CREATE INDEX idx_transactions_destination ON Transactions(DestinationAccountId);
+CREATE INDEX idx_transactions_createdat ON Transactions(CreatedAt);
+
+CREATE INDEX idx_fraud_transaction ON FraudFlags(TransactionId);
+
+Rationale:
+
+Faster transaction lookups
+Optimized analytics queries
+Improved filtering by date and account
+2.3 API Design
+Base URL
+/api
+Accounts Endpoints
+Create Account
+POST /api/accounts
+
+Request:
+
+{
+  "userId": "uuid"
+}
+
+Response:
+
+{
+  "accountId": "uuid",
+  "accountNumber": "ACC123456",
+  "balance": 0
+}
+Get User Accounts
+GET /api/accounts/user/{userId}
+Transactions Endpoints
+Deposit
+POST /api/transactions/deposit
+
+Request:
+
+{
+  "accountId": "uuid",
+  "amount": 500
+}
+Withdraw
+POST /api/transactions/withdraw
+
+Request:
+
+{
+  "accountId": "uuid",
+  "amount": 200
+}
+Transfer
+POST /api/transactions/transfer
+
+Request:
+
+{
+  "sourceAccountId": "uuid",
+  "destinationAccountId": "uuid",
+  "amount": 1000
+}
+Get Transactions
+GET /api/transactions?userId=&startDate=&endDate=
+Fraud Endpoints
+Get All Fraud Flags
+GET /api/fraud
+Get Fraud by Transaction
+GET /api/fraud/{transactionId}
+HTTP Status Codes
+200 OK – Success
+201 Created – Resource created
+400 Bad Request – Validation error
+404 Not Found – Resource missing
+500 Internal Server Error – Unexpected failure
+Summary
+
+This phase defines:
+
+Layered architecture with clear responsibilities
+PostgreSQL schema with relationships and indexing
+RESTful API endpoints aligned with banking systems
+
+This design ensures:
+
+Data integrity
+Maintainability
+Scalability readiness

@@ -1,0 +1,244 @@
+Here is **Phase 7: Deployment Strategy** in clean, strict **MDX format**.
+
+---
+
+```mdx id="p7d83k"
+# Phase 7: Deployment Strategy
+
+---
+
+## 7.1 Overview
+
+This phase defines how the system will be deployed in a **cloud-based environment**, aligned with enterprise banking practices.
+
+**Deployment Goals:**
+- Reliable hosting
+- Environment separation
+- Secure configuration
+- Scalable infrastructure
+
+---
+
+## 7.2 Target Architecture (Azure)
+
+The system will be deployed using:
+
+- Backend API → Azure App Service  
+- Database → Azure Database for PostgreSQL  
+- Frontend → Azure Static Web Apps (or simple hosting)
+
+---
+
+## 7.3 Deployment Architecture
+
+```
+
+[ React Frontend ]
+↓
+[ ASP.NET Core API (Azure App Service) ]
+↓
+[ PostgreSQL Database (Azure) ]
+
+````id="arch01"
+
+---
+
+## 7.4 Backend Deployment (ASP.NET Core)
+
+### Step 1: Prepare Application
+
+- Ensure production-ready configuration
+- Update `appsettings.json`
+- Add environment variables support
+
+---
+
+### Step 2: Publish Application
+
+```bash
+dotnet publish -c Release
+````
+
+---
+
+### Step 3: Deploy to Azure App Service
+
+* Create App Service in Azure Portal
+
+* Choose:
+
+  * Runtime: .NET
+  * OS: Linux (recommended)
+
+* Deploy using:
+
+  * Visual Studio publish
+  * Azure CLI
+  * GitHub Actions
+
+---
+
+### Environment Variables
+
+Set in Azure:
+
+* `ConnectionStrings__DefaultConnection`
+* `ASPNETCORE_ENVIRONMENT=Production`
+
+---
+
+## 7.5 Database Deployment (PostgreSQL)
+
+### Step 1: Create Azure PostgreSQL Instance
+
+* Choose:
+
+  * Flexible Server
+  * Region close to users
+  * Basic pricing tier (for project)
+
+---
+
+### Step 2: Configure Access
+
+* Allow Azure services
+* Add your local IP for development
+
+---
+
+### Step 3: Run Migrations
+
+```bash
+dotnet ef database update
+```
+
+---
+
+## 7.6 Frontend Deployment (React)
+
+### Option 1: Azure Static Web Apps (Recommended)
+
+* Build project:
+
+```bash
+npm run build
+```
+
+* Deploy `build/` folder
+
+---
+
+### Option 2: Serve via Backend
+
+* Place build files inside ASP.NET project
+* Serve as static files
+
+---
+
+## 7.7 Environment Configuration
+
+---
+
+### Development
+
+* Local PostgreSQL
+* Local API (`localhost`)
+* React dev server
+
+---
+
+### Production
+
+* Azure PostgreSQL
+* Azure App Service
+* Hosted frontend
+
+---
+
+### Configuration Example
+
+```json id="env01"
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "ENV_VARIABLE"
+  }
+}
+```
+
+---
+
+## 7.8 CI/CD (Optional but Valuable)
+
+### GitHub Actions Example
+
+```yaml id="ci01"
+name: Deploy API
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 7.0
+
+      - name: Build
+        run: dotnet build
+
+      - name: Publish
+        run: dotnet publish -c Release -o out
+```
+
+---
+
+## 7.9 Security Considerations
+
+* Never store credentials in code
+* Use environment variables
+* Restrict database access
+* Enable HTTPS only
+
+---
+
+## 7.10 Monitoring (Basic)
+
+* Enable Azure logs
+* Track:
+
+  * API errors
+  * Fraud detection events
+
+---
+
+## 7.11 Deliverables
+
+By the end of this phase:
+
+* Backend deployed to Azure
+* Database hosted in PostgreSQL
+* Frontend accessible via web
+* Environment properly configured
+
+---
+
+## Summary
+
+This phase ensures:
+
+* Cloud deployment readiness
+* Separation of environments
+* Secure configuration
+
+This makes your project:
+
+* Production-like
+* Enterprise-aligned
+* Demonstrably deployable

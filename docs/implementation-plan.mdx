@@ -1,0 +1,305 @@
+Good catch — you’re right. Some parts were just Markdown, not **MDX-friendly (especially code blocks with IDs and structure consistency)**.
+
+Here’s a **clean, strict MDX version** (no invalid attributes, consistent formatting, ready for frameworks like Next.js / Docusaurus).
+
+---
+
+```mdx
+# Phase 3: Implementation Plan
+
+---
+
+## 3.1 Implementation Strategy
+
+The system will be built in incremental phases, reflecting real-world enterprise delivery.
+
+### Build Order
+
+1. Core Transaction System  
+2. Fraud Detection Module  
+3. Analytics Layer (SQL-driven)  
+4. Lightweight React Dashboard  
+
+**Rationale:**
+
+- Establish a stable transactional foundation first  
+- Layer fraud detection on top of real data  
+- Build analytics once data exists  
+- Add frontend last for visualization  
+
+---
+
+## 3.2 Technology Stack
+
+### Backend
+
+- ASP.NET Core Web API  
+- Entity Framework Core  
+- PostgreSQL  
+- C#  
+
+### Frontend
+
+- React  
+- Fetch API or Axios  
+- Optional: Chart.js  
+
+### Tools
+
+- Swagger / Postman  
+- pgAdmin / DBeaver  
+
+---
+
+## 3.3 Backend Project Structure
+
+```
+
+/BankingSystem.API
+
+├── Controllers/
+│   ├── AccountsController.cs
+│   ├── TransactionsController.cs
+│   └── FraudController.cs
+│
+├── Services/
+│   ├── Interfaces/
+│   │   ├── IAccountService.cs
+│   │   ├── ITransactionService.cs
+│   │   └── IFraudService.cs
+│   │
+│   ├── AccountService.cs
+│   ├── TransactionService.cs
+│   └── FraudService.cs
+│
+├── Repositories/
+│   ├── Interfaces/
+│   │   ├── IAccountRepository.cs
+│   │   ├── ITransactionRepository.cs
+│   │   └── IFraudRepository.cs
+│   │
+│   ├── AccountRepository.cs
+│   ├── TransactionRepository.cs
+│   └── FraudRepository.cs
+│
+├── Models/
+│   ├── User.cs
+│   ├── Account.cs
+│   ├── Transaction.cs
+│   └── FraudFlag.cs
+│
+├── DTOs/
+│   ├── Requests/
+│   └── Responses/
+│
+├── Data/
+│   └── AppDbContext.cs
+│
+├── Migrations/
+│
+├── Program.cs
+└── appsettings.json
+
+````
+
+---
+
+## 3.4 Entity Framework Core Setup
+
+### DbContext
+
+```csharp
+public class AppDbContext : DbContext
+{
+    public DbSet<User> Users { get; set; }
+    public DbSet<Account> Accounts { get; set; }
+    public DbSet<Transaction> Transactions { get; set; }
+    public DbSet<FraudFlag> FraudFlags { get; set; }
+
+    public AppDbContext(DbContextOptions<AppDbContext> options)
+        : base(options) { }
+}
+````
+
+---
+
+### Program Configuration
+
+```csharp
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+```
+
+---
+
+### Connection String
+
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Host=localhost;Port=5432;Database=BankingDB;Username=postgres;Password=yourpassword"
+  }
+}
+```
+
+---
+
+## 3.5 Development Phases
+
+---
+
+### 3.5.1 Core Transaction System
+
+**Goal:** Build a reliable transaction engine.
+
+**Tasks:**
+
+* Create models
+* Run migrations
+* Implement services:
+
+  * AccountService
+  * TransactionService
+* Implement endpoints:
+
+  * Deposit
+  * Withdraw
+  * Transfer
+
+**Key Focus:**
+
+* Atomic database transactions
+* Balance validation
+* Proper error handling
+
+---
+
+### 3.5.2 Fraud Detection Module
+
+**Goal:** Add rule-based fraud detection.
+
+**Tasks:**
+
+* Implement FraudService
+* Integrate into transaction flow
+* Store fraud flags
+
+**Integration Example:**
+
+```csharp
+await _fraudService.EvaluateTransaction(transaction);
+```
+
+---
+
+### 3.5.3 Analytics Layer
+
+**Goal:** Generate insights using SQL queries.
+
+**Tasks:**
+
+* Write queries for:
+
+  * Transaction totals
+  * Monthly trends
+  * Fraud rate
+
+* Expose endpoints:
+
+  * /api/analytics/summary
+  * /api/analytics/trends
+  * /api/analytics/fraud
+
+---
+
+### 3.5.4 React Dashboard
+
+**Goal:** Visualize analytics data.
+
+**Structure:**
+
+```
+/frontend
+
+├── src/
+│   ├── components/
+│   │   ├── KPIBox.jsx
+│   │   ├── Chart.jsx
+│   │   └── Table.jsx
+│   │
+│   ├── pages/
+│   │   └── Dashboard.jsx
+│   │
+│   ├── services/
+│   │   └── api.js
+│   │
+│   └── App.jsx
+```
+
+---
+
+### Example API Call
+
+```javascript
+const fetchSummary = async () => {
+  const res = await fetch("/api/analytics/summary");
+  return res.json();
+};
+```
+
+---
+
+## 3.6 Engineering Considerations
+
+### Transaction Safety
+
+* Use database transactions for transfers
+* Prevent partial updates
+
+### Separation of Concerns
+
+* Controllers: thin
+* Services: business logic
+* Repositories: data access
+
+### Extensibility
+
+* Fraud rules should be modular
+* Analytics queries should be reusable
+
+### Error Handling
+
+* Return proper HTTP responses
+* Avoid exposing internal errors
+
+---
+
+## 3.7 Deliverables
+
+By the end of this phase:
+
+* Structured ASP.NET Core project
+* EF Core configured
+* Core transaction endpoints working
+* Fraud detection integrated
+* Analytics endpoints defined
+* React dashboard scaffold ready
+
+---
+
+## Summary
+
+This phase defines:
+
+* Build strategy
+* Project structure
+* Backend + frontend integration approach
+
+Ensures the system is:
+
+* Maintainable
+* Scalable
+* Portfolio-ready
+
+```
+

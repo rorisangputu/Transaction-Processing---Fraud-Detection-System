@@ -1,0 +1,330 @@
+Here is **Phase 5: Data & Analytics Layer** in clean, strict **MDX format**.
+
+---
+
+```mdx id="p5d91x"
+# Phase 5: Data & Analytics Layer
+
+---
+
+## 5.1 Overview
+
+The analytics layer transforms raw transaction data into **meaningful business insights** using SQL.
+
+**Purpose:**
+- Provide visibility into system activity
+- Support fraud monitoring
+- Enable decision-making
+
+**Design Principle:**
+- Use **SQL-first analytics**
+- Keep logic close to the database for performance and clarity
+
+---
+
+## 5.2 Analytics Architecture
+
+```
+
+PostgreSQL Database
+↓
+SQL Queries (Aggregations)
+↓
+Analytics Service (API Layer)
+↓
+REST Endpoints (/api/analytics/*)
+↓
+React Dashboard
+
+````
+
+---
+
+## 5.3 Core Analytics Metrics
+
+---
+
+### 1. Total Transaction Volume per User
+
+**Purpose:**
+- Measure user activity
+- Identify high-value customers
+
+---
+
+#### SQL Query
+
+```sql
+SELECT 
+    u.id AS user_id,
+    u.name,
+    COUNT(t.id) AS total_transactions,
+    SUM(t.amount) AS total_volume
+FROM Users u
+JOIN Accounts a ON a.userid = u.id
+JOIN Transactions t ON t.sourceaccountid = a.id
+GROUP BY u.id, u.name
+ORDER BY total_volume DESC;
+````
+
+---
+
+#### Explanation
+
+* Joins Users → Accounts → Transactions
+* Counts transactions per user
+* Sums transaction values
+* Orders by highest activity
+
+---
+
+### 2. Monthly Transaction Trends
+
+**Purpose:**
+
+* Understand spending patterns over time
+* Support trend visualization
+
+---
+
+#### SQL Query
+
+```sql
+SELECT 
+    DATE_TRUNC('month', createdat) AS month,
+    COUNT(id) AS total_transactions,
+    SUM(amount) AS total_volume
+FROM Transactions
+GROUP BY month
+ORDER BY month;
+```
+
+---
+
+#### Explanation
+
+* Groups transactions by month
+* Aggregates count and total value
+* Used for line or bar charts
+
+---
+
+### 3. Fraud Rate
+
+**Purpose:**
+
+* Measure system risk level
+* Monitor fraud detection effectiveness
+
+---
+
+#### SQL Query
+
+```sql
+SELECT 
+    COUNT(DISTINCT f.transactionid) * 100.0 / COUNT(t.id) AS fraud_rate_percentage
+FROM Transactions t
+LEFT JOIN FraudFlags f ON f.transactionid = t.id;
+```
+
+---
+
+#### Explanation
+
+* Counts total transactions
+* Counts flagged transactions
+* Calculates percentage
+
+---
+
+### 4. Top Risky Accounts
+
+**Purpose:**
+
+* Identify accounts with frequent fraud activity
+* Assist fraud analysts
+
+---
+
+#### SQL Query
+
+```sql
+SELECT 
+    a.id AS account_id,
+    a.accountnumber,
+    COUNT(f.id) AS fraud_count
+FROM Accounts a
+JOIN Transactions t ON t.sourceaccountid = a.id
+JOIN FraudFlags f ON f.transactionid = t.id
+GROUP BY a.id, a.accountnumber
+ORDER BY fraud_count DESC
+LIMIT 10;
+```
+
+---
+
+#### Explanation
+
+* Links accounts to flagged transactions
+* Counts fraud occurrences
+* Returns top risky accounts
+
+---
+
+## 5.4 API Design for Analytics
+
+---
+
+### Endpoint: Summary
+
+```
+GET /api/analytics/summary
+```
+
+**Response:**
+
+```json
+{
+  "totalTransactions": 1200,
+  "totalVolume": 450000,
+  "fraudRate": 2.5
+}
+```
+
+---
+
+### Endpoint: Trends
+
+```
+GET /api/analytics/trends
+```
+
+**Response:**
+
+```json
+[
+  {
+    "month": "2026-01-01",
+    "totalTransactions": 100,
+    "totalVolume": 50000
+  }
+]
+```
+
+---
+
+### Endpoint: Risky Accounts
+
+```
+GET /api/analytics/risky-accounts
+```
+
+---
+
+## 5.5 Analytics Service Design
+
+### Responsibilities
+
+* Execute raw SQL queries
+* Map results to DTOs
+* Serve data to controllers
+
+---
+
+### Example (C#)
+
+```csharp
+public async Task<IEnumerable<UserTransactionSummary>> GetUserSummary()
+{
+    var query = @"SELECT u.id, u.name, COUNT(t.id), SUM(t.amount)
+                  FROM Users u
+                  JOIN Accounts a ON a.userid = u.id
+                  JOIN Transactions t ON t.sourceaccountid = a.id
+                  GROUP BY u.id, u.name";
+
+    return await _context.Set<UserTransactionSummary>()
+        .FromSqlRaw(query)
+        .ToListAsync();
+}
+```
+
+---
+
+## 5.6 Performance Considerations
+
+---
+
+### Indexing
+
+Ensure indexes exist on:
+
+* Transactions(createdat)
+* Transactions(sourceaccountid)
+* FraudFlags(transactionid)
+
+---
+
+### Query Efficiency
+
+* Use aggregation functions carefully
+* Avoid unnecessary joins
+* Limit large result sets
+
+---
+
+## 5.7 How This Feeds the Dashboard
+
+---
+
+### Data Flow
+
+1. API exposes analytics endpoints
+2. React frontend calls endpoints
+3. Data is transformed into:
+
+   * KPIs
+   * Charts
+   * Tables
+
+---
+
+### Example Mapping
+
+| API Data       | Dashboard Component |
+| -------------- | ------------------- |
+| Summary        | KPI cards           |
+| Trends         | Line/Bar chart      |
+| Risky accounts | Table               |
+
+---
+
+## 5.8 Deliverables
+
+By the end of this phase:
+
+* SQL analytics queries implemented
+* Analytics service created
+* API endpoints exposed
+* Data ready for frontend consumption
+
+---
+
+## Summary
+
+This phase introduces:
+
+* SQL-driven analytics layer
+* Business insights from transactional data
+* Dashboard-ready endpoints
+
+This is a critical differentiator because it demonstrates:
+
+* Data engineering skills
+* SQL proficiency
+* Real-world banking analytics understanding
+
+---
+
+```
+
+---
