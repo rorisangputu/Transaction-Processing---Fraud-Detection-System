@@ -78,6 +78,7 @@ public class AppDbContext : DbContext
             entity.HasKey(t => t.Id);
 
             entity.Property(t => t.Type)
+                .HasConversion<string>()
                 .IsRequired()
                 .HasMaxLength(50);
 
@@ -92,6 +93,7 @@ public class AppDbContext : DbContext
                 .HasForeignKey(f => f.TransactionId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
+
 
         modelBuilder.Entity<FraudFlag>(entity =>
         {
