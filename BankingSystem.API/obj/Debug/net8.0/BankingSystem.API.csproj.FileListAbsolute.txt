@@ -103,3 +103,4 @@
 /Users/roriputu/Documents/Web-Dev/SystemEngineering/BankingApp/BankingSystem.API/obj/Debug/net8.0/BankingSystem.API.pdb
 /Users/roriputu/Documents/Web-Dev/SystemEngineering/BankingApp/BankingSystem.API/obj/Debug/net8.0/BankingSystem.API.genruntimeconfig.cache
 /Users/roriputu/Documents/Web-Dev/SystemEngineering/BankingApp/BankingSystem.API/obj/Debug/net8.0/ref/BankingSystem.API.dll
+/Users/roriputu/Documents/Web-Dev/SystemEngineering/BankingApp/BankingSystem.API/obj/Debug/net8.0/BankingSystem.API.sourcelink.json
