@@ -1,4 +1,6 @@
 using BankingSystem.API.Data;
+using BankingSystem.API.Interfaces;
+using BankingSystem.API.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,6 +19,9 @@ builder.Services.AddDbContext<AppDbContext>(options =>
         builder.Configuration.GetConnectionString("default"),
         new MySqlServerVersion(new Version(8, 0, 21))
     ));
+builder.Services.AddScoped<IAccountRepository, AccountRepository>();
+builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
+builder.Services.AddScoped<IFraudFlagRepository, FraudFlagRepository>();
 
 var app = builder.Build();
 
